@@ -1,1 +1,1 @@
-# projeto_ray_tracing
+Projeto da disciplina de Processamento Gráfico com uso do modelo Ray Tracing
