@@ -1,39 +1,16 @@
-from utils import build_scene, load_from_json
-from components.image import Image
+from components import Scene, Camera, Vector3, Light, Sphere, Material
 from engine import EngineRender
-import argparse
 
-def generate_3d_image(json_path: str = "", image_out: str = "out.ppm", 
-                      return_image: bool = False) -> Image:
-    """
-    Receives two arguments:
-    - The path to the json file containing the scene information.
-    - The path to the output image file.
-    Writes the image specified on json to the output file.
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("jsonpath", default = json_path, nargs='?',
-                const=1, help="Path to config file to be loaded")
-    parser.add_argument("imageout", default = image_out, nargs='?',
-                const=1, help="Path to output the rendered image")
-    args = parser.parse_args()
+light1 = Light(Vector3(0, 20, 5), Vector3(1, 1, 1))
+light2 = Light(Vector3(2, 15, 10), Vector3(0, 1, 0))
+light3 = Light(Vector3(5, 10, -7), Vector3(0, 0, 1))
+sphere1 = Sphere(Vector3(0,0,0), 10, Material(Vector3(200/255, 10/255, 150/255), 1, 1, 0.5, 0.5, 0.5, 3))
+sphere2 = Sphere(Vector3(1,1,1), 2, Material(Vector3(1, 1, 1), 1, 1, 1, 0.1, 1, 5))
+camera = Camera(300, 200, 10, Vector3(0, 1, 0), Vector3(5, 10, -8), Vector3(0, 0, 0))
+scene = Scene(camera, [sphere1, sphere2], [light1, light2, light3], Vector3(1, 200/255, 200/255), Vector3())
 
-    infos_path = args.jsonpath
-    image_path = args.imageout
+engine = EngineRender()
+image = engine.render(scene, True)
 
-    if infos_path == "":
-        print("No json file specified. Run with -h for help.")
-        return
-
-    infos = load_from_json(infos_path)
-    scene = build_scene(infos)
-
-    engine = EngineRender()
-    image = engine.render(scene, True)
-    if return_image: return image
-
-    with open(image_path, 'w') as img_file:
-        image.write_ppm(img_file)
-
-if __name__ == "__main__":
-    generate_3d_image()
+with open("teste.ppm", "w") as img_file:
+    image.write_ppm(img_file)
