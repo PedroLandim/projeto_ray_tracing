@@ -2,7 +2,7 @@ from components import Vector3, Ray, Object3D, Image, Scene
 from random import random
 import math
 
-class EngineRender:
+class EngineRenderRotate:
     MINIMAL_DISPLACE = 0.001
 
     def render(self, scene: Scene, progress: bool = False) -> Image:
@@ -15,23 +15,67 @@ class EngineRender:
         target = camera.target
         up_vector = camera.up_vector
 
-        w = (focus - target).normalize()
-        u = up_vector.crossProduct(w).normalize()
-        v = w.crossProduct(u).normalize()
-        z_vector = focus - focal_distance * w
-        y_vector = (height / 2) * v
-        x_vector = (width / 2) * u
+        # calculate the forward vector of the camera
+        forward = (focus - target).normalize()
 
+        # calculate the right and up vectors
+        right = up_vector.crossProduct(forward).normalize()
+        up = forward.crossProduct(right)
+
+        # calculate the rotation matrix around y-axis
+        cos_theta = math.cos(math.radians(30))
+        sin_theta = math.sin(math.radians(30))
+        rot_matrix_y = [
+            [cos_theta, 0, sin_theta],
+            [0, 1, 0],
+            [-sin_theta, 0, cos_theta]
+        ]
+
+        # rotate the forward and right vectors around y-axis
+        forward = Vector3(
+            rot_matrix_y[0][0]*forward.x + rot_matrix_y[0][1]*forward.y + rot_matrix_y[0][2]*forward.z,
+            rot_matrix_y[1][0]*forward.x + rot_matrix_y[1][1]*forward.y + rot_matrix_y[1][2]*forward.z,
+            rot_matrix_y[2][0]*forward.x + rot_matrix_y[2][1]*forward.y + rot_matrix_y[2][2]*forward.z
+        )
+        right = Vector3(
+            rot_matrix_y[0][0]*right.x + rot_matrix_y[0][1]*right.y + rot_matrix_y[0][2]*right.z,
+            rot_matrix_y[1][0]*right.x + rot_matrix_y[1][1]*right.y + rot_matrix_y[1][2]*right.z,
+            rot_matrix_y[2][0]*right.x + rot_matrix_y[2][1]*right.y + rot_matrix_y[2][2]*right.z
+        )
+
+        # calculate the new focus and target positions after rotation
+        focus = target + forward * focal_distance
+        target = focus - forward
+
+        # calculate the new up vector
+        up_vector = up
+
+        # calculate the new camera parameters
+        camera.focus = focus
+        camera.target = target
+        camera.up_vector = up_vector
+
+        # calculate the new vectors and image center
+        z_vector = focus - focal_distance * forward
+        y_vector = (height / 2) * up
+        x_vector = (width / 2) * right
         image_center = z_vector + pixel_size * (y_vector - x_vector)
+
+        # initialize the image pixels
         pixels = Image(width, height)
+
+        # iterate over each pixel and cast a ray to the scene
         for y in range(height):
             for x in range(width):
-                position = image_center + pixel_size * (x * u - y * v)
+                position = image_center + pixel_size * (x * right - y * up)
                 ray_direction = position - focus
                 ray = Ray(focus, ray_direction)
                 pixels.set_pixel(x, y, self.rayTrace(ray, scene))
+
+            # print the rendering progress if enabled
             if progress:
                 print(f"{(y / height) * 100:.2f}%", end="\r")
+
         return pixels
 
     def rayTrace(self, ray: Ray, scene: Scene) -> Vector3:
@@ -75,8 +119,8 @@ class EngineRender:
             half_vector = 2 * (normal ^ to_light.direction) * normal - to_light.direction
 
             color += light.color * material.specular \
-                * max(half_vector ^ to_camera, 0) ** material.phong
-
+                * max(half_vector ^ to_camera, 0) ** material.phong \
+        
         return color
                 
 

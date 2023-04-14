@@ -2,7 +2,7 @@ from components import Vector3, Ray, Object3D, Image, Scene
 from random import random
 import math
 
-class EngineRender:
+class EngineRenderRotate:
     MINIMAL_DISPLACE = 0.001
 
     def render(self, scene: Scene, progress: bool = False) -> Image:
@@ -16,8 +16,26 @@ class EngineRender:
         up_vector = camera.up_vector
 
         w = (focus - target).normalize()
+
+        # Matriz de rotação y
+        cos_theta = math.cos(math.radians(-30))
+        sin_theta = math.sin(math.radians(-30))
+        rot_matrix_y = [
+            [cos_theta, 0, -sin_theta],
+            [0, 1, 0],
+            [sin_theta, 0, cos_theta]
+        ]
+
+        # Rotacionar w em torno de up_vector em -30 graus
+        w = Vector3(
+            rot_matrix_y[0][0]*w.x + rot_matrix_y[0][1]*w.y + rot_matrix_y[0][2]*w.z,
+            rot_matrix_y[1][0]*w.x + rot_matrix_y[1][1]*w.y + rot_matrix_y[1][2]*w.z,
+            rot_matrix_y[2][0]*w.x + rot_matrix_y[2][1]*w.y + rot_matrix_y[2][2]*w.z
+        )
+
         u = up_vector.crossProduct(w).normalize()
         v = w.crossProduct(u).normalize()
+        print(focus, focal_distance, w)
         z_vector = focus - focal_distance * w
         y_vector = (height / 2) * v
         x_vector = (width / 2) * u
@@ -33,6 +51,7 @@ class EngineRender:
             if progress:
                 print(f"{(y / height) * 100:.2f}%", end="\r")
         return pixels
+
 
     def rayTrace(self, ray: Ray, scene: Scene) -> Vector3:
         color = Vector3()
@@ -75,8 +94,8 @@ class EngineRender:
             half_vector = 2 * (normal ^ to_light.direction) * normal - to_light.direction
 
             color += light.color * material.specular \
-                * max(half_vector ^ to_camera, 0) ** material.phong
-
+                * max(half_vector ^ to_camera, 0) ** material.phong \
+        
         return color
                 
 

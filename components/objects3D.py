@@ -31,8 +31,8 @@ class Sphere(Object3D):
                 return distance, self._normal(ray.origin + ray.direction * distance)
             else:
                 distance = (-b + math.sqrt(delta)) / 2
-                if distance > 0.001:
-                    return distance, self._normal(ray.origin + ray.direction * distance)
+            if distance > 0.001:
+                return distance, self._normal(ray.origin + ray.direction * distance)
         return None, None
     
     def _normal(self, point: Vector3) -> Vector3:
@@ -75,7 +75,7 @@ class Triangle(Object3D):
         edge_B = self.vertex_C - self.vertex_A
         h = ray.direction.crossProduct(edge_B)
         a = edge_A ^ h
-        if abs(a) < 0.001:
+        if 0.001 < a < 0.001:
             return None, None
         f = 1/a
         s = ray.origin - self.vertex_A
@@ -88,13 +88,40 @@ class Triangle(Object3D):
             return None, None
         t = f * (edge_B ^ q)
         if t > 0.001:
-            return t, self._normal()
+            return t, self._normal(ray)
         return None, None
     
-    def _normal(self) -> Vector3:
-        return self.normal
+    def _normal(self, ray: Ray) -> Vector3:
+        """Returns surface normal, same normal for any surface_point"""
+        normal = self.normal
+        omega = -ray.direction
+        # Checks if ray is leaving the object, is so, invert normal and coefficient (air coefficient is 1)
+        if normal ^ omega < 0:
+            normal = -self.normal
+        return normal
 
 class TriangleMesh(Object3D):
-    def __init__(self, vertex_A: Vector3, vertex_B: 
-            Vector3, vertex_C: Vector3, material: Material):
-        a = 3
+    def __init__(self, list_vertices: list[Vector3], list_triangles: list[tuple[int, int, int]], material: Material) -> None:
+        super().__init__(material)
+        self.list_vertices = list_vertices
+        self.list_triangles = list_triangles
+
+    def intersects(self, ray: Ray) -> "tuple[float, Vector3] | tuple[None, None]":
+        distance_min = None
+        hit_normal = None
+        for triangle_data in self.list_triangles:
+            vertecies = (
+                self.list_vertices[triangle_data[0]],
+                self.list_vertices[triangle_data[1]],
+                self.list_vertices[triangle_data[2]]
+            )
+            triangle = Triangle(*vertecies, self.material)
+            distance, normal = triangle.intersects(ray)
+            if distance is not None and (distance_min is None or distance < distance_min):
+                distance_min = distance
+                hit_normal = normal
+
+        return distance_min, hit_normal
+
+    def _normal(self, triangle: Triangle) -> Vector3:
+        return triangle._normal()
