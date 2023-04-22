@@ -11,28 +11,27 @@ class EngineRenderRotate:
         camera = scene.camera
         pixel_size = 0.1
         focal_distance = camera.focal_distance
+        # Matriz de rotação y
+        cos_theta = math.cos(math.radians(30))
+        sin_theta = math.sin(math.radians(30))
+        rot_matrix_y = [
+            [cos_theta, 0, sin_theta],
+            [0, 1, 0],
+            [-sin_theta, 0, cos_theta]
+        ]
         focus = camera.focus
+        focus = Vector3(
+            rot_matrix_y[0][0]*focus.x + rot_matrix_y[0][1]*focus.y + rot_matrix_y[0][2]*focus.z,
+            rot_matrix_y[1][0]*focus.x + rot_matrix_y[1][1]*focus.y + rot_matrix_y[1][2]*focus.z,
+            rot_matrix_y[2][0]*focus.x + rot_matrix_y[2][1]*focus.y + rot_matrix_y[2][2]*focus.z
+        )
         target = camera.target
         up_vector = camera.up_vector
 
         w = (focus - target).normalize()
 
-        # Matriz de rotação y
-        cos_theta = math.cos(math.radians(-30))
-        sin_theta = math.sin(math.radians(-30))
-        rot_matrix_y = [
-            [cos_theta, 0, -sin_theta],
-            [0, 1, 0],
-            [sin_theta, 0, cos_theta]
-        ]
-
         # Rotacionar w em torno de up_vector em -30 graus
-        w = Vector3(
-            rot_matrix_y[0][0]*w.x + rot_matrix_y[0][1]*w.y + rot_matrix_y[0][2]*w.z,
-            rot_matrix_y[1][0]*w.x + rot_matrix_y[1][1]*w.y + rot_matrix_y[1][2]*w.z,
-            rot_matrix_y[2][0]*w.x + rot_matrix_y[2][1]*w.y + rot_matrix_y[2][2]*w.z
-        )
-
+        
         u = up_vector.crossProduct(w).normalize()
         v = w.crossProduct(u).normalize()
         print(focus, focal_distance, w)

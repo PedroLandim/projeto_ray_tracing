@@ -71,7 +71,7 @@ class EngineRender:
             color += material.color.kron(light.color) \
                 * material.diffuse \
                 * max(normal ^ to_light.direction, 0)
-            
+
             half_vector = 2 * (normal ^ to_light.direction) * normal - to_light.direction
 
             color += light.color * material.specular \

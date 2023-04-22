@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import abstractmethod
 from components import Vector3, Material, Ray
 import math
@@ -13,6 +14,15 @@ class Object3D:
     @abstractmethod
     def _normal(self, point: Vector3 = None) -> Vector3:
         pass
+
+    @abstractmethod
+    def translate(self, vector: Vector3) -> Object3D:
+        pass
+
+    @abstractmethod
+    def rotate(self, vector: Vector3, angle: float) -> Object3D:
+        pass
+
 
 class Sphere(Object3D):
     def __init__(self, center: Vector3, radius: float, material: Material) -> None:
@@ -40,6 +50,9 @@ class Sphere(Object3D):
     
     def transform(self, matrix):
         self.center = self.center.transform(matrix)
+
+    def translate(self, vector: Vector3) -> Object3D:
+        return Sphere(self.center + vector, self.radius, self.material)
     
 class Plane(Object3D):
     def __init__(self, point: Vector3, normal: Vector3, material: Material) -> None:
@@ -56,6 +69,10 @@ class Plane(Object3D):
     
     def _normal(self) -> Vector3:
         return self.normal
+
+    def translate(self, vector: Vector3) -> Object3D:
+        return Plane(self.point + vector, self.normal, self.material)
+    
 
 class Triangle(Object3D):
     def __init__(
@@ -75,7 +92,7 @@ class Triangle(Object3D):
         edge_B = self.vertex_C - self.vertex_A
         h = ray.direction.crossProduct(edge_B)
         a = edge_A ^ h
-        if 0.001 < a < 0.001:
+        if -0.001 < a < 0.001:
             return None, None
         f = 1/a
         s = ray.origin - self.vertex_A
@@ -99,6 +116,9 @@ class Triangle(Object3D):
         if normal ^ omega < 0:
             normal = -self.normal
         return normal
+    
+    def translate(self, vector: Vector3) -> Object3D:
+        return Triangle(self.vertex_A + vector, self.vertex_B + vector, self.vertex_C + vector, self.material)
 
 class TriangleMesh(Object3D):
     def __init__(self, list_vertices: list[Vector3], list_triangles: list[tuple[int, int, int]], material: Material) -> None:
@@ -125,3 +145,9 @@ class TriangleMesh(Object3D):
 
     def _normal(self, triangle: Triangle) -> Vector3:
         return triangle._normal()
+    
+    def translate(self, vector: Vector3) -> Object3D:
+        list_new = []
+        for vertex in self.list_vertices:
+            list_new.append([vertex[0] + vector.x, vertex[1] + vector.y, vertex[2] + vector.z])
+        return TriangleMesh(list_new, self.list_triangles, self.material)

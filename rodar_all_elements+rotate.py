@@ -1,7 +1,7 @@
 from components import Scene, Camera, Vector3, Light, Sphere, Material, Plane, Triangle, TriangleMesh
 from engine30rotation import EngineRenderRotate
 
-sphere = Sphere(Vector3(0, 2, -5), 2, Material(Vector3(1, 0, 0)))
+sphere = Sphere(Vector3(0, 1, 0), 2, Material(Vector3(1, 0, 0)))
 plane = Plane(Vector3(0, -2, 0), Vector3(0, 1, 0), Material(Vector3(0, 0, 1)))
 triangle = Triangle(Vector3(3, 0, -5), Vector3(3, 5, -5), Vector3(5, 0, -5), Material(Vector3(0, 1, 0)))
 vertices = [
@@ -38,5 +38,5 @@ scene = Scene(camera, [sphere, plane, triangle, malha], [light1, light2, light3]
 engine = EngineRenderRotate()
 image = engine.render(scene, True)
 
-with open("raytest-all-elements-30rotate4.ppm", "w") as img_file:
+with open("teste3.ppm", "w") as img_file:
     image.write_ppm(img_file)
