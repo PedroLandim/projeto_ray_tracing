@@ -34,13 +34,50 @@ class EngineRender:
                 print(f"{(y / height) * 100:.2f}%", end="\r")
         return pixels
 
-    def rayTrace(self, ray: Ray, scene: Scene) -> Vector3:
+    def rayTrace(self, ray: Ray, scene: Scene, depth=0) -> Vector3:
         color = Vector3()
         distace_hit, normal_hit, object_hit = self.findNearest(ray, scene)
         if object_hit is None:
             return scene.background_color
         hit_position = ray.origin + ray.direction * distace_hit
         color += self.color_at(object_hit, hit_position, normal_hit, scene)
+        if depth < scene.max_depth:
+            material_hit = object_hit.material
+            if material_hit.reflection > 0:
+                omega = -ray.direction
+                normal = normal_hit
+                if omega ^ normal < 0:
+                    normal = -normal
+                new_pos = hit_position + normal * self.MINIMAL_DISPLACE
+                new_dir = ray.direction - 2 * ray.direction.dotProduct(normal) * normal
+                new_ray = Ray(new_pos, new_dir)
+                color += self.rayTrace(new_ray, scene, depth + 1) * material_hit.reflection
+
+            if material_hit.refraction > 0:
+                omega = -ray.direction
+                normal = normal_hit
+                relative_refraction = material_hit.refraction
+
+                if omega ^ normal < 0:
+                    relative_refraction = 1/material_hit.refraction
+                    normal = -normal
+                
+            delta = 1-(1/(relative_refraction**2) * (1-(normal ^omega)**2))
+
+            if delta >= 0:
+                inverse_refra = 1 / relative_refraction
+                new_dir = -inverse_refra * omega - (math.sqrt(delta) - inverse_refra * (normal ^omega)) * normal
+                new_pos = hit_position - normal * self.MINIMAL_DISPLACE
+                new_ray = Ray(new_pos, new_dir)
+
+                color += self.rayTrace(new_ray, scene, depth +1) * material_hit.transmission
+            else:
+                new_pos = hit_position + normal *self.MINIMAL_DISPLACE
+                new_dir = ray.direction - 2 * ray.direction.dotProduct(normal) * normal
+                new_ray = Ray(new_pos, new_dir)
+
+                color += self.rayTrace(new_ray, scene, depth +1) * material_hit.transmission
+
         return color
     
     def findNearest(self, ray: Ray, scene: Scene) -> "tuple[float, Vector3, Object3D] | tuple[None, None, None]":
@@ -54,7 +91,7 @@ class EngineRender:
                 object_hit = obj
                 minimum_normal = normal
         return minimum_distance, minimum_normal, object_hit
-    
+
     def color_at(
             self, object_hit: Object3D, hit_position: Vector3,
             normal: Vector3, scene: Scene) -> Vector3:
