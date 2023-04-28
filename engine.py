@@ -70,7 +70,7 @@ class EngineRender:
                 new_pos = hit_position - normal * self.MINIMAL_DISPLACE
                 new_ray = Ray(new_pos, new_dir)
 
-                color += self.rayTrace(new_ray, scene, depth +1) * material_hit.transmission
+                color += self.rayTrace(new_ray, scene, depth +1) *  material_hit.transmission
             else:
                 new_pos = hit_position + normal *self.MINIMAL_DISPLACE
                 new_dir = ray.direction - 2 * ray.direction.dotProduct(normal) * normal
