@@ -1,8 +1,9 @@
+from .mixins import LinearTransformationsMixin
 from .vector import Vector3
-from .camera import Camera
-from .image import Image
-from .ray import Ray
 from .material import Material
+from .ray import Ray
+from .objects3D import Object3D, Sphere, Plane, Triangle, TriangleMesh, RevolutionSurface, BezierCurve
 from .light import Light
-from .objects3D import Object3D, Sphere, Plane, Triangle, TriangleMesh
+from .image import Image
+from .camera import Camera
 from .scene import Scene

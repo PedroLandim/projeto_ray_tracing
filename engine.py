@@ -62,21 +62,21 @@ class EngineRender:
                     relative_refraction = 1/material_hit.refraction
                     normal = -normal
                 
-            delta = 1-(1/(relative_refraction**2) * (1-(normal ^omega)**2))
+                delta = 1-(1/(relative_refraction**2) * (1-(normal ^omega)**2))
 
-            if delta >= 0:
-                inverse_refra = 1 / relative_refraction
-                new_dir = -inverse_refra * omega - (math.sqrt(delta) - inverse_refra * (normal ^omega)) * normal
-                new_pos = hit_position - normal * self.MINIMAL_DISPLACE
-                new_ray = Ray(new_pos, new_dir)
+                if delta >= 0:
+                    inverse_refra = 1 / relative_refraction
+                    new_dir = -inverse_refra * omega - (math.sqrt(delta) - inverse_refra * (normal ^omega)) * normal
+                    new_pos = hit_position - normal * self.MINIMAL_DISPLACE
+                    new_ray = Ray(new_pos, new_dir)
 
-                color += self.rayTrace(new_ray, scene, depth +1) *  material_hit.transmission
-            else:
-                new_pos = hit_position + normal *self.MINIMAL_DISPLACE
-                new_dir = ray.direction - 2 * ray.direction.dotProduct(normal) * normal
-                new_ray = Ray(new_pos, new_dir)
+                    color += self.rayTrace(new_ray, scene, depth +1) *  material_hit.transmission
+                else:
+                    new_pos = hit_position + normal *self.MINIMAL_DISPLACE
+                    new_dir = ray.direction - 2 * ray.direction.dotProduct(normal) * normal
+                    new_ray = Ray(new_pos, new_dir)
 
-                color += self.rayTrace(new_ray, scene, depth +1) * material_hit.transmission
+                    color += self.rayTrace(new_ray, scene, depth +1) * material_hit.transmission
 
         return color
     
