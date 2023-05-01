@@ -22,8 +22,8 @@ class Camera(Object3D):
         return None
 
     def transform(self, matrix: list[list[float]]) -> Object3D:
-        new_target = self.target.transform(matrix)
-        new_up = (self.up_vector + self.target).transform(matrix) - new_target
-        return Camera(self.hr, self.vr, self.focal_distance, new_up, self.focus, new_target)
+        new_focus = self.focus.transform(matrix)
+        new_up = (self.up_vector + self.focus).transform(matrix) - new_focus
+        return Camera(self.vr, self.hr, self.focal_distance, new_up, new_focus, self.target)
 
 

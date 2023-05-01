@@ -13,13 +13,13 @@ light1 = Light(Vector3(0, 20, 0), Vector3(1, 1, 1))
 light2 = Light(Vector3(-10, 15, -10), Vector3(0.5, 0.5, 0.5))
 light3 = Light(Vector3(10, 15, -10), Vector3(0.2, 0.2, 0.8))
 
-camera = Camera(800, 600, 50, Vector3(0, 1, 0), Vector3(0, 0, -30), Vector3(0, 0, 0))
+camera = Camera(800, 600, 50, Vector3(0, 1, 0), Vector3(0, 0, -30), Vector3(0, 0, 0)).rotate(Vector3(1,1,1),Vector3(),5)
 
-scene = Scene(camera, [triangle], [light1, light2, light3], Vector3(0.2, 0.2, 0.2), Vector3(), 1)
+scene = Scene(camera, [plane, sphere1, sphere2, sphere3], [light1, light2, light3], Vector3(0.2, 0.2, 0.2), Vector3(), 1)
 
 
 engine = EngineRender()
 image = engine.render(scene, True)
 
-with open("test2.ppm", "w") as img_file:
+with open("test4.ppm", "w") as img_file:
     image.write_ppm(img_file)
