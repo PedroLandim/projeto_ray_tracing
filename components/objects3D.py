@@ -102,7 +102,6 @@ class Triangle(Object3D):
     
     def _normal(self, ray: Ray) -> Vector3:
         """Returns surface normal, same normal for any surface_point"""
-        return self.normal
         normal = self.normal
         omega = -ray.direction
         # Checks if ray is leaving the object, is so, invert normal and coefficient (air coefficient is 1)
@@ -145,7 +144,7 @@ class TriangleMesh(Object3D):
     def transform(self, matrix: list[list[float]]) -> Object3D:
         new_verticies = []
         for vertex in self.list_vertices:
-            new_vertex = Vector3(*vertex).transform(matrix)
+            new_vertex = vertex.transform(matrix)
             new_verticies.append(new_vertex)
         return TriangleMesh(new_verticies, self.list_triangles, self.material)
     
